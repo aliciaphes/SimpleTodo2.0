@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">SimpleTodo2.0</string>
+    <string name="confirm_delete">Are you sure you want to delete this todo?</string>
+    <string name="button_not_found">Button was not found</string>
+    <string name="delete_todo">Delete Todo</string>
+    <string name="delete">delete</string>
+    <string name="todo_deleted">todo was deleted</string>
+    <string name="cancel">cancel</string>
+    <string name="title">title</string>
+    <string name="urgent">urgent</string>
+    <string name="add_todo">Add Todo</string>
+    <string name="update_todo">Update Todo</string>
+    <string name="add">add</string>
+    <string name="update">update</string>
+    <string name="todo_created">todo was created</string>
+    <string name="todo_updated">todo was updated</string>
+    <string name="email">email</string>
+    <string name="subject_urgent">&#91;URGENT&#93;&#32;</string>
+    <string name="do_not_forget">Don\'t forget to&#8230;</string>
+    <string name="enter_new_todo">Enter a new todo</string>
+    <string name="hint">To do: &#8230;</string>
+</resources>

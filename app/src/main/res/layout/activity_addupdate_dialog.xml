@@ -18,6 +18,5 @@
         android:id="@+id/checkbox_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textCapWords"
-        android:text="@string/urgent" />
+        android:text="@string/urgent_capitalized" />
 </LinearLayout>

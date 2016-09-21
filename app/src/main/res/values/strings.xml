@@ -8,12 +8,14 @@
     <string name="cancel">cancel</string>
     <string name="title">title</string>
     <string name="urgent">urgent</string>
+    <string name="urgent_capitalized">Urgent</string>
     <string name="add_todo">Add Todo</string>
     <string name="update_todo">Update Todo</string>
     <string name="add">add</string>
     <string name="update">update</string>
     <string name="todo_created">todo was created</string>
     <string name="todo_updated">todo was updated</string>
+    <string name="empty_todo">Please enter some text</string>
     <string name="email">email</string>
     <string name="subject_urgent">&#91;URGENT&#93;&#32;</string>
     <string name="do_not_forget">Don\'t forget to&#8230;</string>

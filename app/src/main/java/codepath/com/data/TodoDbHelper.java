@@ -19,10 +19,10 @@ import codepath.com.simpletodo20.MainActivity;
  */
 public class TodoDbHelper extends SQLiteOpenHelper {
 
-    static final String DATABASE_NAME = "todos.db";
+    private static final String DATABASE_NAME = "todos.db";
     //database version must incremented if schema changes.
     private static final int DATABASE_VERSION = 2;
-    public final String TAG = TodoDbHelper.class.getSimpleName();
+    private final String TAG = TodoDbHelper.class.getSimpleName();
 
 
     //constructor

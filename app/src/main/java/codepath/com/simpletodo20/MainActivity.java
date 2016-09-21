@@ -36,8 +36,8 @@ public class MainActivity extends AppCompatActivity {
     public static final char ACTION_CREATE = 'c';
 
     //additional constants:
-    public static final String EMPTY_STRING = "";
-    public static final String TAG = MainActivity.class.getSimpleName();
+    private static final String EMPTY_STRING = "";
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     //attributes:
     private static TodoDbHelper todoDBHelper;
@@ -76,7 +76,8 @@ public class MainActivity extends AppCompatActivity {
         if (button != null) {
             button.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    openAddOrUpdateDialog(v, null, ACTION_CREATE);
+                    //openAddOrUpdateDialog(v, null, ACTION_CREATE);
+                    openAddOrUpdateDialog(null, ACTION_CREATE);
                 }
             });
         } else {
@@ -160,13 +161,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapter, View item, int pos, long id) {
                 Todo todo = todoList.get(pos);
-                openAddOrUpdateDialog(lvTodos, todo, ACTION_UPDATE);
+                //openAddOrUpdateDialog(lvTodos, todo, ACTION_UPDATE);
+                openAddOrUpdateDialog(todo, ACTION_UPDATE);
             }
         });
     }
 
 
-    private void openAddOrUpdateDialog(View v, final Todo t, final char action) {
+    //private void openAddOrUpdateDialog(View v, final Todo t, final char action) {
+    private void openAddOrUpdateDialog(final Todo t, final char action) {
 
         //set layout to display:
         LayoutInflater inflater = LayoutInflater.from(this);
@@ -215,18 +218,24 @@ public class MainActivity extends AppCompatActivity {
 
                     String newText = etNewItem.getText().toString();
 
-                    //retrieve value of checkbox
-                    isChecked = urgentCheckbox.isChecked();
-                    Todo newTodo = new Todo(-1L, newText, isChecked);
+                    if (newText.length() != 0) {//make sure some text was entered
+                        //retrieve value of checkbox
+                        isChecked = urgentCheckbox.isChecked();
+                        Todo newTodo = new Todo(-1L, newText, isChecked);
 
-                    //add it to the database
-                    newId = todoDBHelper.todoCRUD(newTodo, ACTION_CREATE);
-                    if (newId != -1L) {//insertion successful
-                        newTodo.setId(newId);
-                        //refresh the visible list
-                        refreshListWith(newTodo, ACTION_CREATE);
-                        Toast.makeText(MainActivity.this, R.string.todo_created, Toast.LENGTH_LONG).show();
+                        //add it to the database
+                        newId = todoDBHelper.todoCRUD(newTodo, ACTION_CREATE);
+                        if (newId != -1L) {//insertion successful
+                            newTodo.setId(newId);
+                            //refresh the visible list
+                            refreshListWith(newTodo, ACTION_CREATE);
+                            Toast.makeText(MainActivity.this, R.string.todo_created, Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, R.string.empty_todo, Toast.LENGTH_LONG).show();
                     }
+
+
                 } else if (action == ACTION_UPDATE) {
 
                     t.setTitle(etNewItem.getText().toString());

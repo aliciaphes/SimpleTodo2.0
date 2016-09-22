@@ -1,6 +1,5 @@
 package codepath.com.simpletodo20;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -112,14 +111,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        AlertDialog deleteDialog = builder.create();
+        deleteDialog.show();
     }
 
 
     // Add list of todos to visible ListView in the shape of:
     // - title
-    // - subtitle --> indicates if todo is urgent
+    // - subtitle --> indicates if to-do is urgent
     // use of custom adapter for the color red
     private void initializeList() {
 
@@ -144,19 +143,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //set actions to perform when todo is clicked: longclick and single click are available
+    //set actions to perform when to-do is clicked: longclick and single click are available
     private void setupListViewListener() {
-        //long clicking on an todo deletes it (and updates accordingly):
+        //long clicking on an to-do deletes it (and updates accordingly):
         lvTodos.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapter, View item, int pos, long id) {
 
-                openDeleteDialog(pos);//send position of the todo that was clicked
+                openDeleteDialog(pos);//send position of the to-do that was clicked
                 return true;
             }
         });
 
-        //simple click launches the update todo action:
+        //simple click launches the update to-do action:
         lvTodos.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapter, View item, int pos, long id) {
@@ -207,91 +206,142 @@ public class MainActivity extends AppCompatActivity {
             urgentCheckbox.setChecked(t.isUrgent());
         }
 
-        // Add the button and their actions
-        db.setPositiveButton(title, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {// User clicked OK button
 
-                long newId;
-                boolean isChecked;
 
-                if (action == ACTION_CREATE) {
+        //no listener are assigned to the buttons; behavior will be handled by OnShowListener
 
-                    String newText = etNewItem.getText().toString();
+        //set 'add' and 'cancel' buttons:
+        db.setPositiveButton(title, null);
+        db.setNegativeButton(R.string.cancel, null);
 
-                    if (newText.length() != 0) {//make sure some text was entered
-                        //retrieve value of checkbox
-                        isChecked = urgentCheckbox.isChecked();
-                        Todo newTodo = new Todo(-1L, newText, isChecked);
+        //we will use the neutral button to send to-do as email using an Intent
+        db.setNeutralButton(getString(R.string.email), null);
 
-                        //add it to the database
-                        newId = todoDBHelper.todoCRUD(newTodo, ACTION_CREATE);
-                        if (newId != -1L) {//insertion successful
-                            newTodo.setId(newId);
-                            //refresh the visible list
-                            refreshListWith(newTodo, ACTION_CREATE);
-                            Toast.makeText(MainActivity.this, R.string.todo_created, Toast.LENGTH_LONG).show();
+        //create dialog from builder:
+        final AlertDialog addOrUpdateDialog = db.create();
+
+        //set up listeners:
+        addOrUpdateDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+            @Override
+            public void onShow(DialogInterface dialog) {
+
+                Button positive = addOrUpdateDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                positive.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {// User clicked OK button
+                        long newId;
+                        boolean isChecked;
+
+                        if (action == ACTION_CREATE) {
+
+                            String newText = etNewItem.getText().toString();
+
+                            if (newText.length() != 0) {//make sure some text was entered
+                                //retrieve value of checkbox
+                                isChecked = urgentCheckbox.isChecked();
+                                Todo newTodo = new Todo(-1L, newText, isChecked);
+
+                                //add it to the database
+                                newId = todoDBHelper.todoCRUD(newTodo, ACTION_CREATE);
+                                if (newId != -1L) {//insertion successful
+                                    newTodo.setId(newId);
+                                    //refresh the visible list
+                                    refreshListWith(newTodo, ACTION_CREATE);
+                                    Toast.makeText(MainActivity.this, R.string.todo_created, Toast.LENGTH_LONG).show();
+                                }
+                                //Dismiss once everything is OK
+                                addOrUpdateDialog.dismiss();
+
+                            } else {
+                                Toast.makeText(MainActivity.this, R.string.empty_todo, Toast.LENGTH_LONG).show();
+                            }
+
+
+                        } else if (action == ACTION_UPDATE) {
+
+                            String newText = etNewItem.getText().toString();
+
+                            if (newText.length() != 0) {//make sure some text was entered
+                                t.setTitle(newText);
+                                isChecked = urgentCheckbox.isChecked();
+                                t.setUrgency(isChecked);
+                                //update to-do in the database
+                                newId = todoDBHelper.todoCRUD(t, ACTION_UPDATE);
+                                if (newId != -1L) {//update successful
+                                    //refresh the visible list
+                                    refreshListWith(t, ACTION_UPDATE);
+                                    Toast.makeText(MainActivity.this, R.string.todo_updated, Toast.LENGTH_LONG).show();
+                                    //Dismiss once everything is OK
+                                    addOrUpdateDialog.dismiss();
+                                }
+                            }
+
+                            else{
+                                Toast.makeText(MainActivity.this, R.string.empty_todo, Toast.LENGTH_LONG).show();
+                            }
                         }
-                    } else {
-                        Toast.makeText(MainActivity.this, R.string.empty_todo, Toast.LENGTH_LONG).show();
-                    }
-
-
-                } else if (action == ACTION_UPDATE) {
-
-                    t.setTitle(etNewItem.getText().toString());
-
-                    isChecked = urgentCheckbox.isChecked();
-                    t.setUrgency(isChecked);
-                    //update todo in the database
-                    newId = todoDBHelper.todoCRUD(t, ACTION_UPDATE);
-                    if (newId != -1L) {//update successful
-                        //refresh the visible list
-                        refreshListWith(t, ACTION_UPDATE);
-                        Toast.makeText(MainActivity.this, R.string.todo_updated, Toast.LENGTH_LONG).show();
-                    }
-                }
-                cleanTextArea();
-            }
-        })
-                //we will use the neutral button to send todo as email using an Intent
-                .setNeutralButton(getString(R.string.email), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        //create intent that will be launched
-                        Intent emailTodoIntent = new Intent(Intent.ACTION_SENDTO);
-
-                        emailTodoIntent.setData(Uri.parse("mailto:")); // only allow email apps
-
-                        String urgent = (t.isUrgent() ? getString(R.string.subject_urgent) : EMPTY_STRING);
-                        emailTodoIntent.putExtra(Intent.EXTRA_SUBJECT, urgent + getString(R.string.do_not_forget));
-
-                        //retrieve current contents of the dialog
-                        String newTitle = etNewItem.getText().toString();
-                        boolean isChecked = urgentCheckbox.isChecked();
-
-                        //if any of the data has changed, update todo before sending
-                        if (t.getTitle() != newTitle || t.isUrgent() != isChecked) {
-                            t.setTitle(newTitle);
-                            t.setUrgency(isChecked);
-                            todoDBHelper.todoCRUD(t, ACTION_UPDATE);
-                        }
-
-                        emailTodoIntent.putExtra(Intent.EXTRA_TEXT, t.getTitle());
-
-                        if (emailTodoIntent.resolveActivity(getPackageManager()) != null) {
-                            startActivity(emailTodoIntent);
-                        }
-                    }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // User cancelled the dialog
-                        dialog.dismiss();
                         cleanTextArea();
                     }
                 });
 
-        Dialog d = db.create();
-        d.show();
+                Button negative = addOrUpdateDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+                negative.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        // User cancelled the dialog
+                        addOrUpdateDialog.dismiss();
+                        cleanTextArea();
+                    }
+                });
+                Button neutral = addOrUpdateDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+                neutral.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+
+                        //retrieve current text of the to-do
+                        String newTitle = etNewItem.getText().toString();
+
+                        if (newTitle.length() != 0) {//make sure some text was entered
+                            //create intent that will be launched
+                            Intent emailTodoIntent = new Intent(Intent.ACTION_SENDTO);
+
+                            emailTodoIntent.setData(Uri.parse("mailto:")); // only allow email apps
+
+                            boolean isChecked = urgentCheckbox.isChecked();
+
+                            String urgent = (isChecked ? getString(R.string.subject_urgent) : EMPTY_STRING);
+                            emailTodoIntent.putExtra(Intent.EXTRA_SUBJECT, urgent + getString(R.string.do_not_forget));
+
+                            //if any of the data has changed, update to-do before sending:
+                            //NO BECAUSE AFTER SENDING THE DIALOG WILL STILL BE OPEN IF WE WANT TO MODIFY ANYTHING
+//                        if (t.getTitle() != newTitle || t.isUrgent() != isChecked) {
+//                            t.setTitle(newTitle);
+//                            t.setUrgency(isChecked);
+//                            todoDBHelper.todoCRUD(t, ACTION_UPDATE);
+//                        }
+
+                            //emailTodoIntent.putExtra(Intent.EXTRA_TEXT, t.getTitle());
+                            emailTodoIntent.putExtra(Intent.EXTRA_TEXT, newTitle);
+
+                            if (emailTodoIntent.resolveActivity(getPackageManager()) != null) {
+                                startActivity(emailTodoIntent);
+                            }
+                        }
+
+                        else{
+                            Toast.makeText(MainActivity.this, R.string.empty_todo, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+        });
+
+
+        addOrUpdateDialog.show();
     }
 
 
@@ -318,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case ACTION_UPDATE:
-                //modify the corresponding todo in todoList
+                //modify the corresponding to-do in todoList
                 index = todoList.indexOf(newTodo);
                 if (index != -1) {
                     todoList.set(index, newTodo);
